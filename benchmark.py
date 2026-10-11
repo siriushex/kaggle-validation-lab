@@ -225,7 +225,7 @@ Compare AUC, Brier score and log loss; analyse errors; test an embargo; compare 
                 "title": "Grouped Time-Series Leakage Benchmark",
                 "subtitle": "Synthetic devices for honest group/time validation and leakage detection",
                 "description": description, "licenses": [{"name": "CC0-1.0"}],
-                "keywords": ["education", "classification", "time series", "tabular"],
+                "keywords": ["education", "classification", "time-series", "tabular"],
                 "expectedUpdateFrequency": "never",
                 "userSpecifiedSources": "Original synthetic simulator, seed 731. No external data. "
                     "https://github.com/siriushex/kaggle-validation-lab",

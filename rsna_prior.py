@@ -46,6 +46,12 @@ def predict(template: pd.DataFrame, fitted: pd.Series) -> pd.DataFrame:
 
 
 def run(data: Path, output: Path) -> dict:
+    if not (data / "train.csv").is_file() and Path("/kaggle/input").exists():
+        candidates = [p.parent for p in Path("/kaggle/input").rglob("sample_submission.csv")
+                      if (p.parent / "train.csv").is_file()]
+        if len(candidates) != 1:
+            raise ValueError("Expected exactly one attached competition with train and template")
+        data = candidates[0]
     # Explicit usecols prevents clinical reports being loaded or logged.
     train_path = data / "train.csv"
     labels = pd.read_csv(train_path, usecols=[ID] + TARGETS)
@@ -80,7 +86,8 @@ def run(data: Path, output: Path) -> dict:
         "submission_rows": len(submission), "clinical_reports_read": False,
         "images_read": False, "internet_required": False, "gpu_required": False,
         "submitted": False,
-        "source_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        "source_sha256": (hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+                          if "__file__" in globals() else globals().get("_SOURCE_SHA256", "unavailable")),
         "csv_sha256": hashlib.sha256((output / "submission.csv").read_bytes()).hexdigest(),
     }
     (output / "validation.json").write_text(json.dumps(report, indent=2))
