@@ -1,6 +1,8 @@
 import importlib.util
 from pathlib import Path
 import unittest
+import tempfile
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
@@ -58,6 +60,18 @@ class BenchmarkTests(unittest.TestCase):
 
 
 class RSNAContractTests(unittest.TestCase):
+    def test_mount_discovery_never_recurses_into_images(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for nesting in ["competition", "competitions/competition"]:
+                mount = root / nesting
+                mount.mkdir(parents=True)
+                (mount / "train.csv").touch()
+                (mount / "sample_submission.csv").touch()
+                with patch.object(Path, "rglob", side_effect=AssertionError("Recursive image traversal")):
+                    self.assertEqual(rsna.resolve_data(root / "missing", root), mount)
+                (mount / "train.csv").unlink()
+
     def labels(self):
         return pd.DataFrame({t: [0.0, 1.0, np.nan] for t in rsna.TARGETS})
 

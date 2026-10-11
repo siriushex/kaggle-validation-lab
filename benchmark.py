@@ -225,7 +225,7 @@ Compare AUC, Brier score and log loss; analyse errors; test an embargo; compare 
                 "title": "Grouped Time-Series Leakage Benchmark",
                 "subtitle": "Synthetic devices for honest group/time validation and leakage detection",
                 "description": description, "licenses": [{"name": "CC0-1.0"}],
-                "keywords": ["education", "classification", "time-series", "tabular"],
+                "keywords": ["education", "classification", "tabular"],
                 "expectedUpdateFrequency": "never",
                 "userSpecifiedSources": "Original synthetic simulator, seed 731. No external data. "
                     "https://github.com/siriushex/kaggle-validation-lab",
@@ -240,6 +240,12 @@ Compare AUC, Brier score and log loss; analyse errors; test an embargo; compare 
                     {"path": "README.md", "description": "Data card, provenance, protocol and limitations."},
                     {"path": "LICENSE.txt", "description": "License terms for data and code."},
                 ]}
+    metadata["data"] = [
+        {"name": resource["path"], "description": resource["description"],
+         "totalBytes": (output / resource["path"]).stat().st_size if (output / resource["path"]).exists() else 0,
+         "columns": resource.get("schema", {}).get("fields", [])}
+        for resource in metadata["resources"]
+    ]
     (output / "dataset-metadata.json").write_text(json.dumps(metadata, indent=2))
     return {"rows": len(data), "devices": data.device_id.nunique(),
             "split_rows": data.groupby("split").size().to_dict(),

@@ -45,13 +45,20 @@ def predict(template: pd.DataFrame, fitted: pd.Series) -> pd.DataFrame:
     return output
 
 
-def run(data: Path, output: Path) -> dict:
-    if not (data / "train.csv").is_file() and Path("/kaggle/input").exists():
-        candidates = [p.parent for p in Path("/kaggle/input").rglob("sample_submission.csv")
-                      if (p.parent / "train.csv").is_file()]
+def resolve_data(data: Path, input_root: Path = Path("/kaggle/input")) -> Path:
+    if not (data / "train.csv").is_file() and input_root.exists():
+        # Inspect only mount roots, never walk the large MRI directory trees.
+        templates = list(input_root.glob("*/sample_submission.csv"))
+        templates += list(input_root.glob("*/*/sample_submission.csv"))
+        candidates = sorted({p.parent for p in templates if (p.parent / "train.csv").is_file()})
         if len(candidates) != 1:
             raise ValueError("Expected exactly one attached competition with train and template")
         data = candidates[0]
+    return data
+
+
+def run(data: Path, output: Path) -> dict:
+    data = resolve_data(data)
     # Explicit usecols prevents clinical reports being loaded or logged.
     train_path = data / "train.csv"
     labels = pd.read_csv(train_path, usecols=[ID] + TARGETS)
